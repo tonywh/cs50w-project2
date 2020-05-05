@@ -1,4 +1,5 @@
 import os
+import time
 from collections import deque
 
 from flask import Flask, session, render_template, request, redirect, url_for, jsonify
@@ -17,13 +18,24 @@ class Message:
         self.text = text
 
 class Channel:
-    def __init__(self, name ):
+    def __init__(self, id, name):
+        self.id = id
         self.name = name
-        self.messages = collections.deque(maxlen=100)
+        self.timestamp = time.time()
     def addmessage(self, message):
-        self.messages.append( message )
+        messages = messageLists[self.id]
+        if len(messages) >= 100:
+            messages.pop(0)
+        messages.append( message )
+        self.timestamp = message.timestamp
 
-channels = {}
+# Message lists for each channel
+# Index by channel id
+messageLists = []
+
+# Channel objects
+# Index by channel id
+channels = []
 
 @app.route("/")
 def index():
@@ -32,12 +44,15 @@ def index():
 @socketio.on("submit message")
 def addmessage(data):
     channel = channels[ data["channelname"] ]
-    message = Message(data["user_id"], now, data["text"])
+    message = Message(data["username"], time.time(), data["text"])
     channel.addmessage(message)
-    emit("message", {"channel": data["channel_id"], "message": message}, broadcast=True)
+    emit("messages", {"channel": data["channel_id"], "message": message}, broadcast=True)
 
 @socketio.on("submit channel")
 def addchannel(data):
-    channel = Channel(data["name"])
-    channels.append(channel)
-    emit("channel",{"channel_id": len(channels)-1, "channel": channel}, broadcast=True)
+    channels.append(Channel(len(channels), data["name"]))
+    chlist = []
+    for channel in channels:
+        chlist.append({'id':channel.id, 'name': channel.name, 'timestamp': channel.timestamp})
+    print(chlist)
+    emit("channels",{"channels": chlist}, broadcast=True)
