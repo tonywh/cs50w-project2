@@ -101,12 +101,20 @@ function listChannels() {
   // Add list item for each channel
   channels.forEach( (item, index) => {
     li = document.createElement('li');
-    link = '#'
-    li.innerHTML = '<a href="' + link + '">' + item.name + '</a>';
     if ( index == selectedChannel ) {
-      li.innerHTML = '<b>' + li.innerHTML + '</b>';
+      li.innerHTML = '<b>' + item.name + '</b>';
+    } else {
+      li.innerHTML = item.name;
     }
     li.value = item.id;
+    selectorId = "channel-" + item.id;
+    li.id = selectorId;
+    li.onclick = function() {
+      selectedChannel = this.value;
+      listChannels();
+      getMessages();
+    };
+    console.log(li);
     list.append(li);
   });
 }
@@ -119,7 +127,6 @@ function getMessages() {
     request.onload = () => {
       const data = JSON.parse(request.responseText);
       messages = data.messages;
-      console.log(messages);
       listMessages();
     };
     request.send();
