@@ -22,16 +22,10 @@ class Channel:
         self.id = id
         self.name = name
         self.timestamp = time.time()
+        self.messages = deque(maxlen=100)
     def addmessage(self, message):
-        messages = messageLists[self.id]
-        if len(messages) >= 100:
-            messages.pop(0)
-        messages.append( message )
+        self.messages.append( message )
         self.timestamp = message.timestamp
-
-# Message lists for each channel
-# Index by channel id
-messageLists = []
 
 # Channel objects
 # Index by channel id
@@ -41,18 +35,38 @@ channels = []
 def index():
     return render_template("index.html",site=site)
 
+@app.route("/channels", methods=["POST"])
+def channels_api():
+    chlist = []
+    for ch in channels:
+        chlist.append({'id':ch.id, 'name': ch.name, 'timestamp': ch.timestamp})
+    return jsonify({"channels": chlist})
+
+@app.route("/messages/<int:channel_id>", methods=["POST"])
+def messages_api(channel_id):
+    if channel_id < len(channels):
+        channel = channels[channel_id]
+        msglist = []
+        for m in channel.messages:
+            msglist.append({"username": m.username, "timestamp": m.timestamp, "text": m.text})
+        return jsonify({"channel_id": channel_id, "messages": msglist})
+    else:
+        return "Error"
+
 @socketio.on("submit message")
 def addmessage(data):
-    channel = channels[ data["channelname"] ]
+    channel = channels[ data["channel_id"] ]
     message = Message(data["username"], time.time(), data["text"])
     channel.addmessage(message)
-    emit("messages", {"channel": data["channel_id"], "message": message}, broadcast=True)
+    msglist = []
+    for m in channel.messages:
+        msglist.append({"username": m.username, "timestamp": m.timestamp, "text": m.text})
+    emit("messages", {"channel_id": data["channel_id"], "messages": msglist}, broadcast=True)
 
 @socketio.on("submit channel")
 def addchannel(data):
     channels.append(Channel(len(channels), data["name"]))
     chlist = []
-    for channel in channels:
-        chlist.append({'id':channel.id, 'name': channel.name, 'timestamp': channel.timestamp})
-    print(chlist)
+    for ch in channels:
+        chlist.append({'id':ch.id, 'name': ch.name, 'timestamp': ch.timestamp})
     emit("channels",{"channels": chlist}, broadcast=True)
