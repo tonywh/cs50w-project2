@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   var username = localStorage.getItem('username');
   if ( username != null && username != '' ) {
     document.querySelector("#username").innerHTML = username;
-} else {
+  } else {
     Swal.fire({
       title: 'SimpleChat',
       input: 'text',
@@ -45,8 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     configTextInputForm('#submit-channel');
     document.querySelector('#submit-channel').onsubmit = () => {
       const name = removeTextFromForm('#submit-channel');
-//      socket.emit('submit channel', {'name': name}, "hello");
-
       socket.emit('submit channel', {'name': name}, (result, feedback) => {
         if (result != true) {
           Swal.fire("SimpleChat",feedback,"warning");
@@ -65,11 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('messages', data => {
     console.log('Message announcement');
     console.log(data)
+
+    // Upodate channel timestamp
+    channel = channels.find( (channel) => channel.id == data.channel_id );
+    channel.timestamp = data.messages[data.messages.length-1].timestamp;
+    listChannels();
+
+    // Display messages
     if ( data.channel_id == selectedChannel ) {
       messages = data.messages;
       listMessages();
-    } else {
-      // Handle channel timestamp update
     }
   });
 
@@ -111,6 +114,13 @@ function getChannels() {
     const data = JSON.parse(request.responseText);
     channels = data.channels;
     selectedChannel = 0;
+    channelname = localStorage.getItem('channelname');
+    if ( channelname != null && channelname != '' ) {
+      channel = channels.find( (channel) => channel.name == channelname );
+      if ( channel != undefined ) {
+        selectedChannel = channel.id;
+      }
+    }
     console.log(channels);
     listChannels();
     getMessages();
@@ -126,16 +136,16 @@ function listChannels() {
   // Add list item for each channel
   channels.forEach( (item, index) => {
     li = document.createElement('li');
+    li.innerHTML = item.name + ' ' + new Date(item.timestamp*1000).toLocaleString();
     if ( index == selectedChannel ) {
-      li.innerHTML = '<b>' + item.name + '</b>';
-    } else {
-      li.innerHTML = item.name;
+      li.innerHTML = '<b>' + li.innerHTML + '</b>';
     }
     li.value = item.id;
     selectorId = "channel-" + item.id;
     li.id = selectorId;
     li.onclick = function() {
       selectedChannel = this.value;
+      localStorage.setItem('channelname', channels[selectedChannel].name);
       listChannels();
       getMessages();
     };
@@ -159,6 +169,8 @@ function getMessages() {
 }
 
 function listMessages() {
+  document.querySelector('#message-heading').innerHTML = channels[selectedChannel].name;
+
   // Find and clear the document's message list 
   list = document.querySelector('#message-list');
   list.innerHTML = "";
@@ -167,7 +179,7 @@ function listMessages() {
     // Add list item for each message
     messages.forEach( (item, index) => {
       li = document.createElement('li');
-      li.innerHTML = item.timestamp + " " + item.username + "<br>" + item.text;
+      li.innerHTML = new Date(item.timestamp*1000).toLocaleString() + " " + item.username + "<br>" + item.text;
       list.append(li);
     });
   } else {
