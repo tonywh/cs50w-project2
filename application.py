@@ -31,6 +31,10 @@ class Channel:
 # Index by channel id
 channels = []
 
+# Set of unique channel names.
+# Used to efficiently check whether a name already exists
+channelNameSet = set()
+
 @app.route("/")
 def index():
     return render_template("index.html",site=site)
@@ -65,8 +69,14 @@ def addmessage(data):
 
 @socketio.on("submit channel")
 def addchannel(data):
-    channels.append(Channel(len(channels), data["name"]))
-    chlist = []
-    for ch in channels:
-        chlist.append({'id':ch.id, 'name': ch.name, 'timestamp': ch.timestamp})
-    emit("channels",{"channels": chlist}, broadcast=True)
+    newname = data["name"]
+    if newname in channelNameSet:
+        return False, "Channel '" + newname + "' already exists"
+    else:
+        channels.append(Channel(len(channels), newname))
+        channelNameSet.add(newname)
+        chlist = []
+        for ch in channels:
+            chlist.append({'id':ch.id, 'name': ch.name, 'timestamp': ch.timestamp})
+        emit("channels",{"channels": chlist}, broadcast=True)
+        return True, ""

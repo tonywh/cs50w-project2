@@ -1,3 +1,5 @@
+username = '';
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Connect to websocket
@@ -5,11 +7,28 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Get username
   var username = localStorage.getItem('username');
-  while ( username == null || username == "" ) {
-    username = prompt( "Set display name:");
+  if ( username != null && username != '' ) {
+    document.querySelector("#username").innerHTML = username;
+} else {
+    Swal.fire({
+      title: 'SimpleChat',
+      input: 'text',
+      inputValue: '',
+      inputPlaceholder: 'Your display name',
+      allowOutsideClick: false,
+      inputValidator: (value) => {
+        if (!value) {
+          return 'This cannot be left blank!'
+        }
+      }
+    }).then((result) => {
+      if (result.value) {
+        username = result.value;
+        localStorage.setItem('username',username);
+        document.querySelector("#username").innerHTML = username;
+      }
+    });
   }
-  localStorage.setItem('username',username);
-  document.querySelector("#username").innerHTML = username;
 
   // When connected do the rest
   socket.on('connect', () => {
@@ -26,7 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     configTextInputForm('#submit-channel');
     document.querySelector('#submit-channel').onsubmit = () => {
       const name = removeTextFromForm('#submit-channel');
-      socket.emit('submit channel',{'name': name});
+//      socket.emit('submit channel', {'name': name}, "hello");
+
+      socket.emit('submit channel', {'name': name}, (result, feedback) => {
+        if (result != true) {
+          Swal.fire("SimpleChat",feedback,"warning");
+        }
+      });
       console.log('Submitted channel ' + name);
       return false;
     };
