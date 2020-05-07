@@ -31,15 +31,9 @@
     <script id="message" type="text/x-handlebars-template">
       {% raw -%}
       <div class="message">
-        <span class="message-name">
-            {{ name }}
-        </span>
-        <span class="message-time">
-            {{ time }}
-        </span><br>
-        <span class="message-text">
-            {{ text }}
-        </span>
+        <span class="message-name">{{ name }}</span>
+        <span class="message-time">{{ time }}</span><br>
+        <span class="message-text">{{ text }}</span>
       </div>
       {%- endraw %}
     </script>
@@ -58,17 +52,18 @@
       </div>
       <div class="row flex-fill mainview">
         <div id="channels" class="col-lg-3 col-md-6 col-sm-12 border mh-100 scrollable">
+          <h3 id="channels-heading">Channels</h3>
           <form id="submit-channel">
             <input class="text" name="channelname" autocomplete="off" autofocus placeholder="New channel" type="text">
             <input class="submit" type="submit" value="&#x271A;">
           </form>
-          <ul id="channel-list">
-          </ul>
+          <div id="channel-list">
+          </div>
         </div>
         <div id="messages" class="col-lg-9 col-md-6 col-sm-12 border mh-100 scrollable">
-          <h2 id="message-heading"></h2>
-          <ul id="message-list">
-          </ul>
+          <h3 id="message-heading"></h3>
+          <div id="message-list">
+          </div>
           <form id="submit-message">
             <input class="text" autocomplete="off" autofocus placeholder="New message" type="text">
             <input class="submit" type="submit">

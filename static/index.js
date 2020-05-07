@@ -152,14 +152,12 @@ function listChannels() {
       selected: index == selectedChannel
     });
 
-    console.log(html);
     list.innerHTML += html;
-
   });
 
   // Set the channel onclick listeners
-  document.querySelectorAll('.channel').forEach( li => {
-    li.onclick = function() {
+  document.querySelectorAll('.channel').forEach( item => {
+    item.onclick = function() {
       selectedChannel = this.getAttribute("value");
       console.log(channels[selectedChannel]);
       localStorage.setItem('channelname', channels[selectedChannel].name);
@@ -192,15 +190,24 @@ function listMessages() {
 
   if ( messages.length > 0 ) {
     // Add list item for each message
-    messages.forEach( (item, index) => {
-      li = document.createElement('li');
-      li.innerHTML = new Date(item.timestamp*1000).toLocaleString() + " " + item.username + "<br>" + item.text;
-      list.append(li);
-    });
+    messages.forEach( (item) => {
+      timestamp_ms = item.timestamp*1000;
+      today = new Date().toLocaleDateString();
+      datetime = new Date(timestamp_ms);
+      datetime_str = datetime.toLocaleDateString();
+      if ( datetime_str == today ) {
+        datetime_str = datetime.toLocaleTimeString();
+      }
+      html = message_template({
+        name: item.username,
+        time: datetime_str,
+        text: item.text,
+      });
+  
+      list.innerHTML += html;
+      });
   } else {
-    li = document.createElement('li');
-    li.innerHTML = 'No meesages'
-    list.append(li);
+    list.innerHTML = 'No meesages'
   }
 }
 
