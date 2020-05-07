@@ -107,6 +107,9 @@ var channels;
 var selectedChannel;
 var messages;
 
+const channel_template = Handlebars.compile(document.querySelector('#channel').innerHTML);
+const message_template = Handlebars.compile(document.querySelector('#message').innerHTML);
+
 function getChannels() {
   const request = new XMLHttpRequest();
   request.open('POST', `/channels`);
@@ -135,22 +138,34 @@ function listChannels() {
 
   // Add list item for each channel
   channels.forEach( (item, index) => {
-    li = document.createElement('li');
-    li.innerHTML = item.name + ' ' + new Date(item.timestamp*1000).toLocaleString();
-    if ( index == selectedChannel ) {
-      li.innerHTML = '<b>' + li.innerHTML + '</b>';
+    timestamp_ms = item.timestamp*1000;
+    today = new Date().toLocaleDateString();
+    datetime = new Date(timestamp_ms);
+    datetime_str = datetime.toLocaleDateString();
+    if ( datetime_str == today ) {
+      datetime_str = datetime.toLocaleTimeString();
     }
-    li.value = item.id;
-    selectorId = "channel-" + item.id;
-    li.id = selectorId;
+    html = channel_template({
+      name: item.name,
+      time: datetime_str,
+      id: item.id,
+      selected: index == selectedChannel
+    });
+
+    console.log(html);
+    list.innerHTML += html;
+
+  });
+
+  // Set the channel onclick listeners
+  document.querySelectorAll('.channel').forEach( li => {
     li.onclick = function() {
-      selectedChannel = this.value;
+      selectedChannel = this.getAttribute("value");
+      console.log(channels[selectedChannel]);
       localStorage.setItem('channelname', channels[selectedChannel].name);
       listChannels();
       getMessages();
     };
-    console.log(li);
-    list.append(li);
   });
 }
 
