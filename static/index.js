@@ -205,9 +205,12 @@ function listMessages() {
       });
   
       list.innerHTML += html;
-      });
+    });
   } else {
     list.innerHTML = 'No meesages'
   }
+
+  messageColumn = document.querySelector('#messages');
+  messageColumn.scrollTop = messageColumn.scrollHeight;
 }
 

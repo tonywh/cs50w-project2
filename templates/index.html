@@ -33,7 +33,7 @@
       <div class="message">
         <span class="message-name">{{ name }}</span>
         <span class="message-time">{{ time }}</span><br>
-        <span class="message-text">{{ text }}</span>
+        <span class="message-text"><pre>{{ text }}</pre></span>
       </div>
       {%- endraw %}
     </script>
@@ -51,22 +51,22 @@
         </nav>
       </div>
       <div class="row flex-fill mainview">
-        <div id="channels" class="col-lg-3 col-md-6 col-sm-12 border mh-100 scrollable">
+        <div id="channels" class="col-lg-4 col-md-6 col-sm-12 border mh-100 scrollable">
           <h3 id="channels-heading">Channels</h3>
           <form id="submit-channel">
-            <input class="text" name="channelname" autocomplete="off" autofocus placeholder="New channel" type="text">
+            <input class="text" name="channelname" autocomplete="off" maxlength="20" placeholder="New channel" type="text">
             <input class="submit" type="submit" value="&#x271A;">
           </form>
           <div id="channel-list">
           </div>
         </div>
-        <div id="messages" class="col-lg-9 col-md-6 col-sm-12 border mh-100 scrollable">
+        <div id="messages" class="col-lg-8 col-md-6 col-sm-12 border mh-100 scrollable">
           <h3 id="message-heading"></h3>
           <div id="message-list">
           </div>
           <form id="submit-message">
-            <input class="text" autocomplete="off" autofocus placeholder="New message" type="text">
-            <input class="submit" type="submit">
+            <textarea class="text" name="text" rows="3" maxlength="1000" autofocus placeholder="New message"></textarea>
+            <input class="submit" type="submit" value="Send">
           </form>
         </div>
       </div>

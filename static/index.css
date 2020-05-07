@@ -96,4 +96,25 @@ html,body {
 
 .message-text {
   font-size: 1em;
+  border: none;
+  resize: none;
+  width: 100%;
+}
+
+#submit-message {
+  background: #f0e5db;
+  padding: 10px;
+  padding-bottom: 5px;
+}
+
+#submit-message textarea {
+  width: 80%;
+}
+
+#submit-message .submit {
+  float: right;
+}
+
+pre {
+  white-space: pre-wrap;
 }
