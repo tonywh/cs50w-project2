@@ -1,12 +1,13 @@
-username = '';
+var username = '';
+var socket;
 
 document.addEventListener('DOMContentLoaded', () => {
 
   // Connect to websocket
-  var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+  socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
   
   // Get username
-  var username = localStorage.getItem('username');
+  username = localStorage.getItem('username');
   if ( username != null && username != '' ) {
     document.querySelector("#username").innerHTML = username;
   } else {
@@ -189,8 +190,12 @@ function listMessages() {
   list.innerHTML = "";
 
   if ( messages.length > 0 ) {
+
     // Add list item for each message
+    index = 0;
     messages.forEach( (item) => {
+
+      // Format the timestamp
       timestamp_ms = item.timestamp*1000;
       today = new Date().toLocaleDateString();
       datetime = new Date(timestamp_ms);
@@ -198,20 +203,59 @@ function listMessages() {
       if ( datetime_str == today ) {
         datetime_str = datetime.toLocaleTimeString();
       }
+
+      // Set up the hover menu for dropdown button
+      links = [];
+      if ( item.username == username ) {
+        links.push({ action: 'delete', text: 'Delete' });
+      } else {
+        // Enable this line to add PM menu item
+        // links.push({ action: 'pm', text: 'PM ' + item.username });
+      }
+
+      // Create the html
       html = message_template({
+        index: index,
         name: item.username,
         time: datetime_str,
         text: item.text,
+        links: links
       });
   
       list.innerHTML += html;
+      index += 1;
     });
   } else {
     list.innerHTML = 'No messages'
   }
 
+  // Set the message hover menu onclick listeners on each menu item
+  document.querySelectorAll('.message').forEach( message => {
+    console.log(message);
+    message.querySelectorAll('.dropdown-item').forEach( item => {
+      item.onclick = function() {
+        action = this.getAttribute('value');
+        messageIndex = item.closest('.message').getAttribute('value');
+        switch (action) {
+          case 'delete':
+            console.log("delete " + messageIndex);
+            deleteMessage(selectedChannel,messageIndex);
+            break;
+          case 'pm':
+            // Add code here to implement PM
+            break;
+        }
+      };
+    });
+  });
+  
+  // Scroll to the bottom of the messages
   messageColumn = document.querySelector('#messages');
   messageColumn.scrollTop = messageColumn.scrollHeight;
   document.querySelector('#submit-message .text').focus();
 }
 
+function deleteMessage(channel, index) {
+  id = channels[channel].id;
+  socket.emit('delete message',{'channel_id': id, 'index': index});
+}

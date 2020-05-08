@@ -26,6 +26,8 @@ class Channel:
     def addmessage(self, message):
         self.messages.append( message )
         self.timestamp = message.timestamp
+    def deletemessage(self, index):
+        del self.messages[index]
 
 # Channel objects
 # Index by channel id
@@ -80,3 +82,13 @@ def addchannel(data):
             chlist.append({'id':ch.id, 'name': ch.name, 'timestamp': ch.timestamp})
         emit("channels",{"channels": chlist}, broadcast=True)
         return True, ""
+
+@socketio.on("delete message")
+def deletemessage(data):
+    channel = channels[ data["channel_id"] ]
+    index = int(data["index"])
+    channel.deletemessage(index)
+    msglist = []
+    for m in channel.messages:
+        msglist.append({"username": m.username, "timestamp": m.timestamp, "text": m.text})
+    emit("messages", {"channel_id": data["channel_id"], "messages": msglist}, broadcast=True)
