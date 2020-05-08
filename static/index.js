@@ -1,3 +1,11 @@
+var channels;
+var selectedChannel;
+var newChannelName;
+var messages;
+
+const channel_template = Handlebars.compile(document.querySelector('#channel').innerHTML);
+const message_template = Handlebars.compile(document.querySelector('#message').innerHTML);
+
 var username = '';
 var socket;
 
@@ -39,19 +47,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = removeTextFromForm('#submit-message');
       id = channels[selectedChannel].id;
       socket.emit('submit message',{'channel_id': id, 'username': username, 'text': text});
-      console.log('Submitted message ' + text + ' on channel_id ' + id);
       return false;
     };
 
     configTextInputForm('#submit-channel');
     document.querySelector('#submit-channel').onsubmit = () => {
       const name = removeTextFromForm('#submit-channel');
+      newChannelName = name;
       socket.emit('submit channel', {'name': name}, (result, feedback) => {
         if (result != true) {
+          newChannelName = undefined;
           Swal.fire("SimpleChat",feedback,"warning");
         }
       });
-      console.log('Submitted channel ' + name);
       return false;
     };
 
@@ -62,9 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // When a new message is announced ...
   socket.on('messages', data => {
-    console.log('Message announcement');
-    console.log(data)
-
     // Upodate channel timestamp
     channel = channels.find( (channel) => channel.id == data.channel_id );
     channel.timestamp = data.messages[data.messages.length-1].timestamp;
@@ -79,11 +84,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // When a new channel is announced ...
   socket.on('channels', data => {
-    console.log('Channel announcement');
     channels = data.channels;
-    console.log(channels);
+    channel = undefined;
+    if ( newChannelName != undefined && newChannelName != null && newChannelName != '' ) {
+      channel = channels.find( (channel) => channel.name == newChannelName );
+      newChannelName = undefined;
+      if ( channel != undefined ) {
+        selectedChannel = channel.id;
+      }
+    }
     listChannels();
-  });
+    if ( channel != undefined ) {
+      getMessages();
+    }
+});
 
 });
 
@@ -103,13 +117,6 @@ function removeTextFromForm(name) {
   document.querySelector(name + ' .submit').disabled = true;
   return text;
 }
-
-var channels;
-var selectedChannel;
-var messages;
-
-const channel_template = Handlebars.compile(document.querySelector('#channel').innerHTML);
-const message_template = Handlebars.compile(document.querySelector('#message').innerHTML);
 
 function getChannels() {
   const request = new XMLHttpRequest();
@@ -160,7 +167,6 @@ function listChannels() {
   document.querySelectorAll('.channel').forEach( item => {
     item.onclick = function() {
       selectedChannel = this.getAttribute("value");
-      console.log(channels[selectedChannel]);
       localStorage.setItem('channelname', channels[selectedChannel].name);
       listChannels();
       getMessages();
@@ -179,6 +185,8 @@ function getMessages() {
       listMessages();
     };
     request.send();
+  } else {
+    document.querySelector('#submit-message .text').disabled = true;
   }
 }
 
@@ -189,7 +197,7 @@ function listMessages() {
   list = document.querySelector('#message-list');
   list.innerHTML = "";
 
-  if ( messages.length > 0 ) {
+  if ( messages != undefined && messages.length > 0 ) {
 
     // Add list item for each message
     index = 0;
@@ -242,7 +250,7 @@ function listMessages() {
             deleteMessage(selectedChannel,messageIndex);
             break;
           case 'pm':
-            // Add code here to implement PM
+            // Add code here to implement
             break;
         }
       };
@@ -252,6 +260,7 @@ function listMessages() {
   // Scroll to the bottom of the messages
   messageColumn = document.querySelector('#messages');
   messageColumn.scrollTop = messageColumn.scrollHeight;
+  document.querySelector('#submit-message .text').disabled = false;
   document.querySelector('#submit-message .text').focus();
 }
 

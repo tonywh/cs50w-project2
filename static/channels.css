@@ -22,7 +22,7 @@
 
 .channel {
   background-color: #f0f0f0;
-  padding: 15px;
+  padding: 5px 5px 5px 10px;
   border-bottom: 5px #808080;
   margin-bottom: 5px;
 }
@@ -33,7 +33,7 @@
 
 .selected-channel {
   background-color: #b0b0b0;
-  padding: 15px;
+  padding: 5px 5px 5px 10px;
   border-bottom: 5px #808080;
   margin-bottom: 5px;
 }
