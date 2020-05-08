@@ -207,10 +207,11 @@ function listMessages() {
       list.innerHTML += html;
     });
   } else {
-    list.innerHTML = 'No meesages'
+    list.innerHTML = 'No messages'
   }
 
   messageColumn = document.querySelector('#messages');
   messageColumn.scrollTop = messageColumn.scrollHeight;
+  document.querySelector('#submit-message .text').focus();
 }
 

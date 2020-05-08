@@ -38,7 +38,7 @@ html,body {
   padding: 0;
 }
 
-#channels-heading, #message-heading {
+#channels-heading {
   color: #e66f00;
 }
 
