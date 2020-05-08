@@ -10,10 +10,10 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 
     <script id="channel" type="text/x-handlebars-template">
       {% raw -%}
@@ -34,6 +34,16 @@
         <span class="message-name">{{ name }}</span>
         <span class="message-time">{{ time }}</span><br>
         <span class="message-text"><pre>{{ text }}</pre></span>
+        {{#if links}}
+          <div class="dropdown">
+            <button class="dropbtn"><span class="fa fa-bars"></span></button>
+            <div class="dropdown-content">
+              {{#each links}}
+                <a href="#">{{ this }}</a>
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
       </div>
       {%- endraw %}
     </script>

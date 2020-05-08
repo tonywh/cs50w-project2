@@ -1,0 +1,43 @@
+.message {
+  background-color: #f0f0f0;
+  padding: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.message-name {
+  font-size: 0.8em;
+  color: #808080;
+}
+
+.message-time {
+  font-size: 0.8em;
+  float: right;
+  color: #808080;
+}
+
+.message-text {
+  font-size: 1em;
+  border: none;
+  resize: none;
+  width: 100%;
+}
+
+#submit-message {
+  background: #f0e5db;
+  padding: 10px;
+  padding-bottom: 5px;
+}
+
+#submit-message textarea {
+  width: 80%;
+}
+
+#submit-message .submit {
+  float: right;
+}
+
+pre {
+  white-space: pre-wrap;
+}
