@@ -172,6 +172,10 @@ function listChannels() {
       getMessages();
     };
   });
+
+  if ( channels.length == 0 ) {
+    document.querySelector('#submit-channel .text').focus();
+  }
 }
 
 function getMessages() {
@@ -200,7 +204,6 @@ function listMessages() {
   if ( messages != undefined && messages.length > 0 ) {
 
     // Add list item for each message
-    index = 0;
     messages.forEach( (item) => {
 
       // Format the timestamp
@@ -223,7 +226,7 @@ function listMessages() {
 
       // Create the html
       html = message_template({
-        index: index,
+        id: item.id,
         name: item.username,
         time: datetime_str,
         text: item.text,
@@ -231,7 +234,6 @@ function listMessages() {
       });
   
       list.innerHTML += html;
-      index += 1;
     });
   } else {
     list.innerHTML = 'No messages'
@@ -243,11 +245,11 @@ function listMessages() {
     message.querySelectorAll('.dropdown-item').forEach( item => {
       item.onclick = function() {
         action = this.getAttribute('value');
-        messageIndex = item.closest('.message').getAttribute('value');
+        messageId = item.closest('.message').getAttribute('value');
         switch (action) {
           case 'delete':
-            console.log("delete " + messageIndex);
-            deleteMessage(selectedChannel,messageIndex);
+            console.log("delete " + messageId);
+            deleteMessage(selectedChannel,messageId);
             break;
           case 'pm':
             // Add code here to implement
@@ -264,7 +266,7 @@ function listMessages() {
   document.querySelector('#submit-message .text').focus();
 }
 
-function deleteMessage(channel, index) {
+function deleteMessage(channel, messageId) {
   id = channels[channel].id;
-  socket.emit('delete message',{'channel_id': id, 'index': index});
+  socket.emit('delete message',{'channel_id': id, 'message_id': messageId});
 }

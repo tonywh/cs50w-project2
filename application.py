@@ -1,6 +1,7 @@
 import os
 import time
 from collections import deque
+from sortedcontainers import SortedKeyList
 
 from flask import Flask, session, render_template, request, redirect, url_for, jsonify
 from flask_session import Session
@@ -12,22 +13,31 @@ socketio = SocketIO(app)
 site = "SimpleChat"
 
 class Message:
+    serial = 0
     def __init__(self, username, timestamp, text):
+        self.id = Message.serial
+        Message.serial += 1
         self.username = username
         self.timestamp = timestamp
         self.text = text
+    @staticmethod
+    def key(message):
+        return message.id
 
 class Channel:
     def __init__(self, id, name):
         self.id = id
         self.name = name
         self.timestamp = time.time()
-        self.messages = deque(maxlen=100)
+        self.messages = SortedKeyList(key=Message.key)
     def addmessage(self, message):
-        self.messages.append( message )
+        self.messages.add( message )
         self.timestamp = message.timestamp
-    def deletemessage(self, index):
-        del self.messages[index]
+        if len(self.messages) > 100:
+            self.messages.pop(0)
+    def deletemessage(self, id):
+        index = self.messages.bisect_key_left( id )
+        self.messages.pop(index)
 
 # Channel objects
 # Index by channel id
@@ -66,7 +76,7 @@ def addmessage(data):
     channel.addmessage(message)
     msglist = []
     for m in channel.messages:
-        msglist.append({"username": m.username, "timestamp": m.timestamp, "text": m.text})
+        msglist.append({"id": m.id, "username": m.username, "timestamp": m.timestamp, "text": m.text})
     emit("messages", {"channel_id": data["channel_id"], "messages": msglist}, broadcast=True)
 
 @socketio.on("submit channel")
@@ -86,8 +96,7 @@ def addchannel(data):
 @socketio.on("delete message")
 def deletemessage(data):
     channel = channels[ data["channel_id"] ]
-    index = int(data["index"])
-    channel.deletemessage(index)
+    channel.deletemessage(int(data["message_id"]))
     msglist = []
     for m in channel.messages:
         msglist.append({"username": m.username, "timestamp": m.timestamp, "text": m.text})
