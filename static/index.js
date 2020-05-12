@@ -2,6 +2,7 @@ var channels;
 var selectedChannel;
 var newChannelName;
 var messages;
+var messageScrollTop;
 
 const channel_template = Handlebars.compile(document.querySelector('#channel').innerHTML);
 const message_template = Handlebars.compile(document.querySelector('#message').innerHTML);
@@ -63,22 +64,25 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     };
 
-    getChannels();
+    document.querySelector('#messages').onscroll = () => {
+      if ( document.querySelector('#messages').scrollTop == 0 ) {
+        getMoreMessages();
+      }
+    };
 
-    console.log('Loaded');
+    getChannels();
   });
 
-  // When a new message is announced ...
-  socket.on('messages', data => {
+  // When a message update ...
+  socket.on('messages updated', data => {
     // Upodate channel timestamp
     channel = channels.find( (channel) => channel.id == data.channel_id );
-    channel.timestamp = data.messages[data.messages.length-1].timestamp;
+    channel.timestamp = data.timestamp;
     listChannels();
 
     // Display messages
     if ( data.channel_id == selectedChannel ) {
-      messages = data.messages;
-      listMessages();
+      getMessages();
     }
   });
 
@@ -97,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if ( channel != undefined ) {
       getMessages();
     }
-});
+  });
 
 });
 
@@ -132,7 +136,6 @@ function getChannels() {
         selectedChannel = channel.id;
       }
     }
-    console.log(channels);
     listChannels();
     getMessages();
   };
@@ -182,20 +185,42 @@ function getMessages() {
   if ( channels.length > 0 ) {
     channel = channels[selectedChannel];
     const request = new XMLHttpRequest();
-    request.open('POST', `/messages/${channel.id}`);
+    request.open('POST', `/messages`);
     request.onload = () => {
       const data = JSON.parse(request.responseText);
       messages = data.messages;
       listMessages();
     };
-    request.send();
+    const data = new FormData();
+    data.append('channel_id', channel.id);
+    data.append('start', 0);
+    data.append('end', 20);
+    request.send(data);
   } else {
     document.querySelector('#submit-message .text').disabled = true;
   }
 }
 
-function listMessages() {
+function getMoreMessages() {
+  channel = channels[selectedChannel];
+  const request = new XMLHttpRequest();
+  request.open('POST', '/messages');
+  request.onload = () => {
+    const data = JSON.parse(request.responseText);
+    messages.push(...data.messages);
+    listMessages(newlist=false);
+  };
+  const data = new FormData();
+  data.append('channel_id', channel.id);
+  data.append('start', messages.length);
+  data.append('end', messages.length + 20);
+  request.send(data);
+}
+
+function listMessages(newlist=true) {
   document.querySelector('#message-heading').innerHTML = channels[selectedChannel].name;
+
+  scrollHeight = document.querySelector('#messages').scrollHeight;
 
   // Find and clear the document's message list 
   list = document.querySelector('#message-list');
@@ -233,7 +258,7 @@ function listMessages() {
         links: links
       });
   
-      list.innerHTML += html;
+      list.innerHTML = html + list.innerHTML;
     });
   } else {
     list.innerHTML = 'No messages'
@@ -241,7 +266,6 @@ function listMessages() {
 
   // Set the message hover menu onclick listeners on each menu item
   document.querySelectorAll('.message').forEach( message => {
-    console.log(message);
     message.querySelectorAll('.dropdown-item').forEach( item => {
       item.onclick = function() {
         action = this.getAttribute('value');
@@ -258,12 +282,19 @@ function listMessages() {
       };
     });
   });
-  
-  // Scroll to the bottom of the messages
-  messageColumn = document.querySelector('#messages');
-  messageColumn.scrollTop = messageColumn.scrollHeight;
+
   document.querySelector('#submit-message .text').disabled = false;
-  document.querySelector('#submit-message .text').focus();
+
+  messageColumn = document.querySelector('#messages');
+  if ( newlist ) {
+    // Scroll to the bottom of the messages
+    messageColumn.scrollTop = messageColumn.scrollHeight - messageColumn.offsetHeight;;
+    document.querySelector('#submit-message .text').focus();
+  } else {
+    // Set scroll to keep messages in same position
+    messageColumn.scrollTop = messageColumn.scrollHeight - scrollHeight;
+  }
+
 }
 
 function deleteMessage(channel, messageId) {
