@@ -4,8 +4,9 @@
 
 .dropdown-button {
 /*  background-color: #f0e5db;*/
-  color: #fda14c9f;
+/*  color: #fda14c9f;*/
   float: right;
+  border: none;
 }
 
 .dropdown-content {
