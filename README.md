@@ -3,7 +3,10 @@
 Web Programming with Python and JavaScript.
 
 ## Overview
-Antony Whittam's submission for Project 2 of the ES50W Harvard - EdX course. It is a simple chat web application using a single web page. It uses Flask/Python on the server and HTML/CSS/Javascript on the client, with Bootstrap, Handlebars, Ajax, Web Sockets. It is designed to be simple, intuitive, and fast.
+This is Antony Whittam's submission for Project 2 of the CS50W Harvard - EdX course. It is a simple chat web application using a single web page. It uses Flask/Python on the server and HTML/CSS/Javascript on the client, with Bootstrap, Handlebars, Ajax, Web Sockets and is designed to be simple to use, intuitive, and fast.
+
+## Demo
+[Watch a screencast demo here.](https://youtu.be/yrgIfbXQjbw)
 
 ## Files
 | File              | Dir       | Content/Purpose            |
@@ -33,16 +36,23 @@ Antony Whittam's submission for Project 2 of the ES50W Harvard - EdX course. It 
 | Server channel data   | Python list of class Channel objects
 | Server message data   | Python sortedcontainers.SortedKeyList of class Message
 
+## My Personal Touch - Delete Own Message
+As my own personal touch in addition to the listed project requirements, I have added the ability for users to delete their own messages. Delete is accessed through a menu button on the chosen message. This menu also has the potential for the addition of several possible options - see below.
+
 ## Further development
 
 ### Additions to message dropdown menu
-* private message the sender
 * edit
-* formward
+* forward
 * reply
+* private message to the sender
 
 ### Message enhancements
 * emoticons
 * attachments
 * hyperlinks
 * formatting
+
+### Channel list enhancements
+* indicate channels with unread messages
+* order channels by timestamp of most recent message
